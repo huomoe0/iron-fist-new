@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "ironfistnew",
+  "version": "${version}",
+
+  "name": "IronFistNew",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "All-Rights-Reserved",
+  "icon": "assets/ironfistnew/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "top.azusall.ironfistnew.client.IronFistNewClient"
+    ],
+    "main": [
+      "top.azusall.ironfistnew.IronFistNew"
+    ]
+  },
+
+  "mixins": [
+    "ironfistnew.mixins.json"
+    ,{
+      "config": "ironfistnew.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
