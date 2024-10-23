@@ -15,6 +15,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import top.azusall.ironfistnew.command.CommandIronFist;
 import top.azusall.ironfistnew.common.StateSaverAndLoader;
@@ -68,30 +69,41 @@ public class IronFistNew implements ModInitializer {
         });
 
 
+
+
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
+            player.sendMessage(Text.literal("挖掘速度: " + player.getMainHandStack().getMiningSpeedMultiplier(state)));
+            player.sendMessage(Text.literal(player.getMainHandStack().toString()));
+
+            return true;
+        });
+
+
         // 注册一个方块挖掘事件监听器
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-            if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.DIRT) {
-                IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(player);
-                // 空手,当泥土方块被挖掘时增加计数
-                if (player.getMainHandStack().isEmpty()) {
-                    blockBreakService.onBlockBreak(player, world, pos, state, playerState);
-                } else {
-                    return;
-                }
-                log.info("playerXP: {}, level: {}, fatigue:{}, cumulativework: {}, lastBreakMillis:{}, nextNeedXp: {}",
-                        playerState.getFistXp(), playerState.getFistLevel(), playerState.getEnergy(), playerState.getCumulativeWork(),
-                        playerState.getLastBreakMillis(), blockBreakService.getLevelUpXp(playerState.getFistLevel()));
+            IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(player);
 
-
-                MinecraftServer server = world.getServer();
-                S2CSyncPayload s2CSyncPayload = new S2CSyncPayload(ByteUtil.encoding(playerState));
-                // 向客户端发送数据包
-                ServerPlayerEntity playerEntity = server.getPlayerManager().getPlayer(player.getUuid());
-                server.execute(() -> {
-                    ServerPlayNetworking.send(playerEntity, s2CSyncPayload);
-
-                });
+            // 空手,当泥土方块被挖掘时增加计数
+            if (player.getMainHandStack().isEmpty()) {
+                blockBreakService.onBlockBreak(player, world, pos, state, playerState);
+            } else {
+                return;
             }
+
+
+            log.info("playerXP: {}, level: {}, fatigue:{}, cumulativework: {}, lastBreakMillis:{}, nextNeedXp: {}",
+                    playerState.getFistXp(), playerState.getFistLevel(), playerState.getEnergy(), playerState.getCumulativeWork(),
+                    playerState.getLastBreakMillis(), blockBreakService.getLevelUpXp(playerState.getFistLevel()));
+
+
+            MinecraftServer server = world.getServer();
+            S2CSyncPayload s2CSyncPayload = new S2CSyncPayload(ByteUtil.encoding(playerState));
+            // 向客户端发送数据包
+            ServerPlayerEntity playerEntity = server.getPlayerManager().getPlayer(player.getUuid());
+            server.execute(() -> {
+                ServerPlayNetworking.send(playerEntity, s2CSyncPayload);
+
+            });
         });
 
 
@@ -106,4 +118,6 @@ public class IronFistNew implements ModInitializer {
         });
 
     }
+
+
 }

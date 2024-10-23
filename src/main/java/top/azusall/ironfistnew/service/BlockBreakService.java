@@ -1,18 +1,16 @@
 package top.azusall.ironfistnew.service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.attribute.AttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import top.azusall.ironfistnew.constant.ParamConstant;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
-import top.azusall.ironfistnew.util.HarvestUtil;
 
 /**
  * @Author: liumingda
@@ -66,6 +64,7 @@ public class BlockBreakService {
         fistXp += obtainedXp;
         if (fistXp > getLevelUpXp(fistLevel)) {
             fistLevel++;
+            setBlockBreakSpeed(player, fistLevel);
             player.sendMessage(Text.literal(ParamConstant.LEVEL_UP_MESSAGE_PREFIX + fistLevel));
             playerState.setFistLevel(fistLevel);
         }
@@ -91,62 +90,13 @@ public class BlockBreakService {
      * 钩入破坏速度计算，并根据拳头等级进行修改。
      * 根据是否需要工具以及达到的等级来决定速度。
      */
-
-    public void onBreakSpeed(PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction, IronFistPlayer playerState) {
-        int fistLevel = playerState.getFistLevel();
-        Block block = world.getBlockState(pos).getBlock();
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-//        player.getBlockBreakingSpeed()
-        // 如果需要工具且已达到所需等级，或不需要工具，则更新速度
-        if (fistLevel - 1 >= HarvestUtil.getHarvestLevel(block)) {
-//            setNewSpeed(Math.max(((fistLevel - 1) * 2), 1f));
-        }
+    public void setBlockBreakSpeed(PlayerEntity player, int level) {
+        // /attribute @s minecraft:player_block_break_speed base set 5.0
+        // 修改挖掘速度
+        AttributeContainer attributes = player.getAttributes();
+        EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
+        double newSpeed = Math.pow(2, level - 1);
+        customInstance.setBaseValue(newSpeed);
 
     }
-
-//
-//    /**
-//     * Hooks in to the check to see if a player can harvest a block and uses the
-//     * fist level to determine it.
-//     *
-//     * @param event The can harvest check data
-//     */
-//    @SubscribeEvent
-//    public void canHarvestBlock(PlayerEvent.HarvestCheck event) {
-//        if (event.entityPlayer == null) {
-//            return;
-//        }
-//
-//        // Load the iron fist properties of the player
-//        IronFistPlayer properties = IronFistPlayer.get(event.entityPlayer);
-//        int fistLevel = properties.getFistLevel();
-//
-//        // If a tool is required and the required level is reached the block may
-//        // be harvested, meta data 0 is used as I could find no way to find the
-//        // actual metadata.
-//        if (!event.block.getMaterial().isToolNotRequired()) {
-//            int harvestLevel = event.block.getHarvestLevel(0);
-//
-//            // If the harvest level is -1 check by material else check if level
-//            // is
-//            // reached
-//            if (harvestLevel == 0
-//                    && canBreakMaterial(fistLevel, event.block.getMaterial())
-//                    || (harvestLevel != 0 && harvestLevel - (fistLevel - 1) <= 0)) {
-//                event.success = true;
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Checks if the fist level can break the material.
-//     *
-//     * @param level    The fist level to check against
-//     * @param material The material to check for
-//     * @return Whether or not the material can be broken
-//     */
-//    private boolean canBreakMaterial(int level, Material material) {
-//        return (material == Material.rock || material == Material.iron || material == Material.anvil) ? level > 1
-//                : true;
-//    }
 }
