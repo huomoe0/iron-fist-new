@@ -3,9 +3,7 @@ package top.azusall.ironfistnew.client;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -26,22 +24,17 @@ public class IronFistNewClient implements ClientModInitializer {
 
     private static IronFistPlayer ironFistPlayer = new IronFistPlayer();
 
-    private static final BlockBreakService blockBreakService = new BlockBreakService();
-
-
     @Override
     public void onInitializeClient() {
-        // 注册payload
-        PayloadTypeRegistry.playS2C().register(S2CSyncPayload.ID, S2CSyncPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(S2CInitSyncPayload.ID, S2CInitSyncPayload.CODEC);
+        registerGlobalReceiver();
+        registerBlockBreakEvent();
+    }
 
-        // 进入世界加载
-        ClientPlayConnectionEvents.INIT.register((handler, client) -> {
-            log.info("--------------------ClientPlayConnectionEvents.INIT---------------");
-
-
-        });
-
+    /**
+     * 处理方块破坏事件
+     */
+    private void registerBlockBreakEvent() {
+        BlockBreakService blockBreakService = BlockBreakService.getInstance();
         // 非空手恢复挖掘速度
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
             if (!player.isSpectator()) {
@@ -51,10 +44,18 @@ public class IronFistNewClient implements ClientModInitializer {
                     blockBreakService.setBlockBreakSpeed(player, 1);
                 }
             }
-
             return ActionResult.PASS;
         });
+    }
 
+    /**
+     * 注册数据包接收器
+     */
+    private void registerGlobalReceiver() {
+
+        // 注册payload
+        PayloadTypeRegistry.playS2C().register(S2CSyncPayload.ID, S2CSyncPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(S2CInitSyncPayload.ID, S2CInitSyncPayload.CODEC);
 
         // 初始化
         ClientPlayNetworking.registerGlobalReceiver(IronFistNew.INITIAL_SYNC_ID, (payload, context) -> {
@@ -73,20 +74,10 @@ public class IronFistNewClient implements ClientModInitializer {
                 ClientPlayerEntity player = context.player();
                 S2CSyncPayload payload1 = (S2CSyncPayload) payload;
                 ironFistPlayer = ByteUtil.decoding(payload1.value());
-//                player.sendMessage(Text.literal(player.getUuid().toString()));
+
                 player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
                         ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
             });
         });
-
-
-
-        // 破坏方块事件
-        ClientPlayerBlockBreakEvents.AFTER.register((world, player, pos, state) -> {
-
-//            player.sendMessage(Text.literal("ClientPlayerBlockBreakEvents"));
-        });
-
-
     }
 }

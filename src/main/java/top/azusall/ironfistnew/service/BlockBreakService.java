@@ -1,14 +1,20 @@
 package top.azusall.ironfistnew.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import top.azusall.ironfistnew.common.StateSaverAndLoader;
 import top.azusall.ironfistnew.constant.ParamConstant;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 
@@ -20,6 +26,21 @@ import top.azusall.ironfistnew.entity.IronFistPlayer;
 
 @Slf4j
 public class BlockBreakService {
+
+    @Getter
+    private static BlockBreakService instance = new BlockBreakService();
+
+    private BlockBreakService() {
+    }
+
+    /**
+     * 处理拳头相关逻辑
+     * @param player
+     * @param world
+     * @param pos
+     * @param state
+     * @param playerState
+     */
     public void onBlockBreak(PlayerEntity player, World world, BlockPos pos, BlockState state, IronFistPlayer playerState) {
         int fistLevel = playerState.getFistLevel();
         float cumulativeWork = playerState.getCumulativeWork();
@@ -95,8 +116,25 @@ public class BlockBreakService {
         // 修改挖掘速度
         AttributeContainer attributes = player.getAttributes();
         EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
-        double newSpeed = Math.pow(2, level - 1);
+        double newSpeed = Math.max(((level - 1) * 2), 1f);
         customInstance.setBaseValue(newSpeed);
+    }
 
+
+    private ItemStack getFistLevelTool(int level) {
+        Item pickaxe = switch (level) {
+            case 1 -> Items.WOODEN_PICKAXE;
+            case 2 -> Items.STONE_PICKAXE;
+            case 3 -> Items.IRON_PICKAXE;
+            default -> Items.DIAMOND_PICKAXE;
+        };
+        return pickaxe.getDefaultStack();
+    }
+
+
+    public boolean canHarvest(ServerPlayerEntity instance, BlockState blockState) {
+        IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(instance);
+        int fistLevel = playerState.getFistLevel();
+        return !blockState.isToolRequired() || getFistLevelTool(fistLevel).isSuitableFor(blockState);
     }
 }

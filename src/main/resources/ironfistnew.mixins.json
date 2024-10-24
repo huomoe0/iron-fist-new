@@ -4,6 +4,7 @@
   "package": "top.azusall.ironfistnew.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BlockBreakMixin"
   ],
   "injectors": {
     "defaultRequire": 1

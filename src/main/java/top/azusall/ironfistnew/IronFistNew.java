@@ -38,11 +38,36 @@ public class IronFistNew implements ModInitializer {
     public static final CustomPayload.Id IRONFISTNEW_ID = new CustomPayload.Id(IRONFISTNEW);
     public static final CustomPayload.Id INITIAL_SYNC_ID = new CustomPayload.Id(INITIAL_SYNC);
 
-
-    private final BlockBreakService blockBreakService = new BlockBreakService();
-
     @Override
     public void onInitialize() {
+        registerCommands();
+        registerBlockBreakEvents();
+    }
+
+    /**
+     * 注册命令 fist
+     */
+    private void registerCommands() {
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("fist")
+                    .then(CommandManager.literal("addxp").executes(CommandIronFist::addXp))
+                    .then(CommandManager.literal("levelup").executes(CommandIronFist::levelUp))
+                    .requires(source -> source.hasPermissionLevel(1))
+                    .executes(CommandIronFist::getCommandUsage));
+
+            dispatcher.register(CommandManager.literal("fist")
+                    .then(CommandManager.literal("showxp").executes(CommandIronFist::showXp))
+                    .then(CommandManager.literal("showlevel").executes(CommandIronFist::showLevel))
+                    .executes(CommandIronFist::getCommandUsage));
+        });
+    }
+
+    /**
+     * 注册方块破坏处理
+     */
+    private void registerBlockBreakEvents() {
+        BlockBreakService blockBreakService = BlockBreakService.getInstance();
 
         // 加入服务器时同步
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -56,20 +81,6 @@ public class IronFistNew implements ModInitializer {
                 ServerPlayNetworking.send(playerEntity, s2CSyncPayload);
             });
         });
-
-        // 注册命令 fist
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("fist")
-                    .then(CommandManager.literal("addxp").executes(CommandIronFist::addXp))
-                    .then(CommandManager.literal("levelup").executes(CommandIronFist::levelUp))
-                    .then(CommandManager.literal("showxp").executes(CommandIronFist::showXp))
-                    .then(CommandManager.literal("showlevel").executes(CommandIronFist::showLevel))
-                    .requires(source -> source.hasPermissionLevel(1))
-                    .executes(CommandIronFist::getCommandUsage));
-        });
-
-
-
 
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
             player.sendMessage(Text.literal("挖掘速度: " + player.getMainHandStack().getMiningSpeedMultiplier(state)));
@@ -95,7 +106,6 @@ public class IronFistNew implements ModInitializer {
                     playerState.getFistXp(), playerState.getFistLevel(), playerState.getEnergy(), playerState.getCumulativeWork(),
                     playerState.getLastBreakMillis(), blockBreakService.getLevelUpXp(playerState.getFistLevel()));
 
-
             MinecraftServer server = world.getServer();
             S2CSyncPayload s2CSyncPayload = new S2CSyncPayload(ByteUtil.encoding(playerState));
             // 向客户端发送数据包
@@ -105,8 +115,12 @@ public class IronFistNew implements ModInitializer {
 
             });
         });
+    }
 
-
+    /**
+     * 注册战利品表，测试
+     */
+    private void registerLootTableEvents() {
         LootTableEvents.MODIFY.register((key, tableBuilder, source, wrapperLookup) -> {
             // 我们只修改内置战利品表，而不通过检查源代码来修改数据包战利品表。
             // 我们还要检查战利品表 ID 是否等于我们想要的 ID。
@@ -116,7 +130,6 @@ public class IronFistNew implements ModInitializer {
                 tableBuilder.pool(poolBuilder);
             }
         });
-
     }
 
 
