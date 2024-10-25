@@ -1,4 +1,4 @@
-package top.azusall.ironfistnew.client.command;
+package top.azusall.ironfistnew.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
-import top.azusall.ironfistnew.client.IronFistNewClient;
-import top.azusall.ironfistnew.client.util.ClientPayloadUtil;
+import top.azusall.ironfistnew.IronFistNewClient;
+import top.azusall.ironfistnew.util.ClientPayloadUtil;
 import top.azusall.ironfistnew.entity.MyC2SSyncPayload;
 import top.azusall.ironfistnew.service.BlockBreakService;
 

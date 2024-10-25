@@ -1,4 +1,4 @@
-package top.azusall.ironfistnew.client;
+package top.azusall.ironfistnew;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +8,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import top.azusall.ironfistnew.client.command.IronFistCommand;
+import top.azusall.ironfistnew.command.IronFistCommand;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 import top.azusall.ironfistnew.entity.MyS2CInitPayload;
 import top.azusall.ironfistnew.entity.MyS2CSyncPayload;
@@ -85,6 +87,7 @@ public class IronFistNewClient implements ClientModInitializer {
                 // 拿到服务端发送的数据包
                 ironFistPlayer = PayloadUtil.decodePayload(payload);
 
+//                ClientPlayerEntity player = context.player();
 //                player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
 //                        ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
             });

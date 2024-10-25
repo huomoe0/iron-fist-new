@@ -18,12 +18,6 @@ import top.azusall.ironfistnew.service.BlockBreakService;
 @Mixin(value = ServerPlayerInteractionManager.class)
 public abstract class BlockBreakMixin {
 
-//    @Redirect(method = "tryBreakBlock",
-//              at = @At(value = "INVOKE", target = "Lnet/minecraft/item/Item;canMine(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;)Z"))
-//    public boolean canMineReturn(Item instance, BlockState state, World world, BlockPos pos, PlayerEntity miner) {
-//        return getBoolean();
-//    }
-
     /**
      * 让方块掉落
      * @param instance

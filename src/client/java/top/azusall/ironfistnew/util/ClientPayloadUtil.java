@@ -1,4 +1,4 @@
-package top.azusall.ironfistnew.client.util;
+package top.azusall.ironfistnew.util;
 
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.8-SNAPSHOT'
     id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 version = project.mod_version
@@ -27,6 +28,12 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    maven {
+        url 'https://maven.aliyun.com/nexus/content/groups/public'
+    }
+    maven {
+        url 'https://repository.hanbings.io/proxy'
+    }
 }
 
 dependencies {
@@ -91,6 +98,12 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
+}
+
+shadowJar {
+    archiveBaseName.set("${archives_base_name}")  // jar 文件的基本名字
+    archiveVersion.set("${mod_version}")  // jar 文件的版本号
+	archiveClassifier.set('')  // jar 文件的额外标签，这里设为空
 }
 
 // configure the maven publication
