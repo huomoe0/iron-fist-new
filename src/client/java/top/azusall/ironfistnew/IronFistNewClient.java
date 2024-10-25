@@ -57,7 +57,7 @@ public class IronFistNewClient implements ClientModInitializer {
         // 非空手恢复挖掘速度
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
             if (!player.isSpectator()) {
-                if (player.getMainHandStack().isEmpty()) {
+                if (!IronFistNew.isTool(player.getMainHandStack().getItem())) {
                     blockBreakService.setBlockBreakSpeed(player, ironFistPlayer.getFistLevel());
                 } else {
                     blockBreakService.setBlockBreakSpeed(player, 1);
@@ -87,9 +87,9 @@ public class IronFistNewClient implements ClientModInitializer {
                 // 拿到服务端发送的数据包
                 ironFistPlayer = PayloadUtil.decodePayload(payload);
 
-//                ClientPlayerEntity player = context.player();
-//                player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
-//                        ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
+                ClientPlayerEntity player = context.player();
+                player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
+                        ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
             });
         });
     }

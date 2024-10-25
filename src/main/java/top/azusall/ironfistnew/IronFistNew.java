@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.item.*;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -66,8 +67,8 @@ public class IronFistNew implements ModInitializer {
 
         // 注册一个方块挖掘事件监听器
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-            // 只有空手挖掘记录
-            if (!player.getMainHandStack().isEmpty()) {
+            // 只有空手或者非工具挖掘记录
+            if (isTool(player.getMainHandStack().getItem())) {
                 return;
             }
             IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(player);
@@ -75,5 +76,13 @@ public class IronFistNew implements ModInitializer {
             blockBreakService.onBlockBreak(player, world, pos, state, playerState);
             PayloadUtil.sendToClient((ServerPlayerEntity) player, playerState, MyS2CSyncPayload.class);
         });
+    }
+
+
+    public static boolean isTool(Item item) {
+        if (item instanceof ToolItem) {
+                return true;
+            }
+        return false;
     }
 }
