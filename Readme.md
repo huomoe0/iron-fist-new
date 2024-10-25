@@ -6,7 +6,7 @@
 ### 版本
     fabric 1.21.1
 ### 其他版本
-[1.7.10 Forge](https://github.com/Mrkwtkr/IronFist)   
+[铁拳 Ironfist](https://www.mcmod.cn/class/4229.html)   
 
 
 ### 用法
