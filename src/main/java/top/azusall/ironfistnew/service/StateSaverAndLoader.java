@@ -1,4 +1,4 @@
-package top.azusall.ironfistnew.common;
+package top.azusall.ironfistnew.service;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 public class StateSaverAndLoader extends PersistentState {
 
-    public HashMap<UUID, IronFistPlayer> players = new HashMap<>();
+    public static HashMap<UUID, IronFistPlayer> players = new HashMap<>();
 
     /**
      * 写入nbt
@@ -50,7 +50,7 @@ public class StateSaverAndLoader extends PersistentState {
             NbtCompound c = players.getCompound(uuid);
             IronFistPlayer ironFistPlayer = new IronFistPlayer(c.getInt("fistLevel"), c.getDouble("fistXp"), c.getFloat("cumulativeWork"), c.getLong("lastBreakMillis"), c.getDouble("energy"));
             UUID uuid1 = UUID.fromString(uuid);
-            state.players.put(uuid1, ironFistPlayer);
+            StateSaverAndLoader.players.put(uuid1, ironFistPlayer);
         });
         return state;
     }
@@ -88,5 +88,10 @@ public class StateSaverAndLoader extends PersistentState {
         IronFistPlayer playerState = serverState.players.computeIfAbsent(player.getUuid(), uuid -> new IronFistPlayer());
 
         return playerState;
+    }
+
+
+    public static void setPlayerState(LivingEntity player, IronFistPlayer playerState) {
+        players.put(player.getUuid(), playerState);
     }
 }

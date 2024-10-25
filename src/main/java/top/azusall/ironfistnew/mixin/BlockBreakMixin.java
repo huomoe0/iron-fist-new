@@ -33,7 +33,7 @@ public abstract class BlockBreakMixin {
     @Redirect(method = "tryBreakBlock",
               at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;canHarvest(Lnet/minecraft/block/BlockState;)Z"))
     public boolean canHarvestReturn(ServerPlayerEntity instance, BlockState blockState) {
-        BlockBreakService instance1 = BlockBreakService.getInstance();
+        BlockBreakService instance1 = BlockBreakService.INSTANCE;
         return instance1.canHarvest(instance, blockState);
     }
 

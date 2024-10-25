@@ -2,28 +2,20 @@ package top.azusall.ironfistnew;
 
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import top.azusall.ironfistnew.command.CommandIronFist;
-import top.azusall.ironfistnew.common.StateSaverAndLoader;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
-import top.azusall.ironfistnew.entity.S2CInitSyncPayload;
-import top.azusall.ironfistnew.entity.S2CSyncPayload;
+import top.azusall.ironfistnew.entity.MyC2SSyncPayload;
+import top.azusall.ironfistnew.entity.MyS2CInitPayload;
+import top.azusall.ironfistnew.entity.MyS2CSyncPayload;
 import top.azusall.ironfistnew.service.BlockBreakService;
-import top.azusall.ironfistnew.util.ByteUtil;
+import top.azusall.ironfistnew.service.StateSaverAndLoader;
+import top.azusall.ironfistnew.util.PayloadUtil;
 
 
 /**
@@ -40,26 +32,29 @@ public class IronFistNew implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        registerCommands();
+        registerPayloadReceiver();
+        registerPayloadSender();
         registerBlockBreakEvents();
     }
 
+    private void registerPayloadReceiver() {
+        PayloadTypeRegistry.playC2S().register(MyC2SSyncPayload.ID, MyC2SSyncPayload.CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(MyC2SSyncPayload.ID, ((payload, context) -> {
+            IronFistPlayer ironFistPlayer = PayloadUtil.decodePayload(payload);
+            ServerPlayerEntity player = context.player();
+            StateSaverAndLoader.setPlayerState(player, ironFistPlayer);
+        }));
+    }
+
     /**
-     * 注册命令 fist
+     * 与客户端发送数据
      */
-    private void registerCommands() {
-
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("fist")
-                    .then(CommandManager.literal("addxp").executes(CommandIronFist::addXp))
-                    .then(CommandManager.literal("levelup").executes(CommandIronFist::levelUp))
-                    .requires(source -> source.hasPermissionLevel(1))
-                    .executes(CommandIronFist::getCommandUsage));
-
-            dispatcher.register(CommandManager.literal("fist")
-                    .then(CommandManager.literal("showxp").executes(CommandIronFist::showXp))
-                    .then(CommandManager.literal("showlevel").executes(CommandIronFist::showLevel))
-                    .executes(CommandIronFist::getCommandUsage));
+    private void registerPayloadSender() {
+        // 加入服务器时同步
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(handler.getPlayer());
+            PayloadUtil.sendToClient(handler.player, playerState, MyS2CInitPayload.class);
         });
     }
 
@@ -67,70 +62,18 @@ public class IronFistNew implements ModInitializer {
      * 注册方块破坏处理
      */
     private void registerBlockBreakEvents() {
-        BlockBreakService blockBreakService = BlockBreakService.getInstance();
-
-        // 加入服务器时同步
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(handler.getPlayer());
-
-            S2CInitSyncPayload s2CSyncPayload = new S2CInitSyncPayload(ByteUtil.encoding(playerState));
-            // 向客户端发送数据包
-
-            ServerPlayerEntity playerEntity = handler.player;
-            server.execute(() -> {
-                ServerPlayNetworking.send(playerEntity, s2CSyncPayload);
-            });
-        });
-
-        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
-            player.sendMessage(Text.literal("挖掘速度: " + player.getMainHandStack().getMiningSpeedMultiplier(state)));
-            player.sendMessage(Text.literal(player.getMainHandStack().toString()));
-
-            return true;
-        });
-
+        BlockBreakService blockBreakService = BlockBreakService.INSTANCE;
 
         // 注册一个方块挖掘事件监听器
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-            IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(player);
-
-            // 空手,当泥土方块被挖掘时增加计数
-            if (player.getMainHandStack().isEmpty()) {
-                blockBreakService.onBlockBreak(player, world, pos, state, playerState);
-            } else {
+            // 只有空手挖掘记录
+            if (!player.getMainHandStack().isEmpty()) {
                 return;
             }
+            IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(player);
 
-
-            log.info("playerXP: {}, level: {}, fatigue:{}, cumulativework: {}, lastBreakMillis:{}, nextNeedXp: {}",
-                    playerState.getFistXp(), playerState.getFistLevel(), playerState.getEnergy(), playerState.getCumulativeWork(),
-                    playerState.getLastBreakMillis(), blockBreakService.getLevelUpXp(playerState.getFistLevel()));
-
-            MinecraftServer server = world.getServer();
-            S2CSyncPayload s2CSyncPayload = new S2CSyncPayload(ByteUtil.encoding(playerState));
-            // 向客户端发送数据包
-            ServerPlayerEntity playerEntity = server.getPlayerManager().getPlayer(player.getUuid());
-            server.execute(() -> {
-                ServerPlayNetworking.send(playerEntity, s2CSyncPayload);
-
-            });
+            blockBreakService.onBlockBreak(player, world, pos, state, playerState);
+            PayloadUtil.sendToClient((ServerPlayerEntity) player, playerState, MyS2CSyncPayload.class);
         });
     }
-
-    /**
-     * 注册战利品表，测试
-     */
-    private void registerLootTableEvents() {
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, wrapperLookup) -> {
-            // 我们只修改内置战利品表，而不通过检查源代码来修改数据包战利品表。
-            // 我们还要检查战利品表 ID 是否等于我们想要的 ID。
-            if (source.isBuiltin() && key.equals(Blocks.GRASS_BLOCK.getLootTableKey())) {
-                // We make the pool and add an item
-                LootPool.Builder poolBuilder = LootPool.builder().with(ItemEntry.builder(Items.EGG));
-                tableBuilder.pool(poolBuilder);
-            }
-        });
-    }
-
-
 }

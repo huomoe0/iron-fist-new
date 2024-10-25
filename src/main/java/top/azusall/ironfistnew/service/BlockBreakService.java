@@ -1,6 +1,5 @@
 package top.azusall.ironfistnew.service;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.attribute.AttributeContainer;
@@ -14,7 +13,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.azusall.ironfistnew.common.StateSaverAndLoader;
 import top.azusall.ironfistnew.constant.ParamConstant;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 
@@ -26,20 +24,13 @@ import top.azusall.ironfistnew.entity.IronFistPlayer;
 
 @Slf4j
 public class BlockBreakService {
-
-    @Getter
-    private static BlockBreakService instance = new BlockBreakService();
+    public static final BlockBreakService INSTANCE = new BlockBreakService();
 
     private BlockBreakService() {
     }
 
     /**
      * 处理拳头相关逻辑
-     * @param player
-     * @param world
-     * @param pos
-     * @param state
-     * @param playerState
      */
     public void onBlockBreak(PlayerEntity player, World world, BlockPos pos, BlockState state, IronFistPlayer playerState) {
         int fistLevel = playerState.getFistLevel();
@@ -83,27 +74,25 @@ public class BlockBreakService {
         double fistXp = playerState.getFistXp();
         double obtainedXp = hardness * energy;
         fistXp += obtainedXp;
-        if (fistXp > getLevelUpXp(fistLevel)) {
+        if (fistXp >= getLevelUpXp(fistLevel)) {
             fistLevel++;
-            setBlockBreakSpeed(player, fistLevel);
             player.sendMessage(Text.literal(ParamConstant.LEVEL_UP_MESSAGE_PREFIX + fistLevel));
-            playerState.setFistLevel(fistLevel);
         }
 
         // 保存属性
+        playerState.setFistLevel(fistLevel);
         playerState.setLastBreakMillis(currentMillis);
         playerState.setFistXp(fistXp);
         playerState.setCumulativeWork(cumulativeWork);
         playerState.setEnergy(energy);
     }
 
-
     /**
-     * @param fistLevel 当前等级
+     * @param nowLevel 当前等级
      * @return 升级需要的经验
      */
-    public double getLevelUpXp(int fistLevel) {
-        return 6.95997 * Math.pow(Math.E, (1.97241 * fistLevel));
+    public double getLevelUpXp(int nowLevel) {
+        return 6.95997 * Math.pow(Math.E, (1.97241 * nowLevel));
     }
 
 
@@ -116,16 +105,18 @@ public class BlockBreakService {
         // 修改挖掘速度
         AttributeContainer attributes = player.getAttributes();
         EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
-        double newSpeed = Math.max(((level - 1) * 2), 1f);
+        double newSpeed = Math.max(((level - 1) * ParamConstant.SPEED_MULTIPLE), 1f);
+        assert customInstance != null;
         customInstance.setBaseValue(newSpeed);
     }
 
 
     private ItemStack getFistLevelTool(int level) {
         Item pickaxe = switch (level) {
-            case 1 -> Items.WOODEN_PICKAXE;
-            case 2 -> Items.STONE_PICKAXE;
-            case 3 -> Items.IRON_PICKAXE;
+            case 1 -> Items.AIR;
+            case 2 -> Items.WOODEN_PICKAXE;
+            case 3 -> Items.STONE_PICKAXE;
+            case 4 -> Items.IRON_PICKAXE;
             default -> Items.DIAMOND_PICKAXE;
         };
         return pickaxe.getDefaultStack();

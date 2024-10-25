@@ -1,9 +1,13 @@
 ### IronFistNew 铁拳 高版本移植
 
 ---
-
+### 介绍
+    
 ### 版本
     fabric 1.21.1
+### 其他版本
+[1.7.10 Forge](https://github.com/Mrkwtkr/IronFist)   
+
 
 ### 用法
 #### 增加经验
@@ -14,7 +18,3 @@
     /fist showxp
 #### 显示当前等级
     /fist showlevel
-    
-### 还需解决的问题
-    对方块挖掘等级判断
-    命令待完善
