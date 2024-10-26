@@ -45,6 +45,8 @@ public class IronFistNewClient implements ClientModInitializer {
                     .then(ClientCommandManager.literal("levelup").executes(IronFistCommand::levelUp).requires(source -> source.hasPermissionLevel(1)))
                     .then(ClientCommandManager.literal("showxp").executes(IronFistCommand::showXp))
                     .then(ClientCommandManager.literal("showlevel").executes(IronFistCommand::showLevel))
+                    .then(ClientCommandManager.literal("debug")
+                            .then(ClientCommandManager.literal("info").executes(IronFistCommand::debugInfo)))
                     .executes(IronFistCommand::getCommandUsage));
         });
     }
@@ -87,9 +89,12 @@ public class IronFistNewClient implements ClientModInitializer {
                 // 拿到服务端发送的数据包
                 ironFistPlayer = PayloadUtil.decodePayload(payload);
 
-                ClientPlayerEntity player = context.player();
-                player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
-                        ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
+                // 调试模式信息
+                if (IronFistCommand.debugMode) {
+                    ClientPlayerEntity player = context.player();
+                    player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
+                            ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
+                }
             });
         });
     }

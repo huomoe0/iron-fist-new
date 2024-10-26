@@ -22,6 +22,11 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
      */
     private static final String[] COMMANDS = new String[]{"addxp", "levelup", "showxp", "showlevel"};
 
+    /**
+     * 调试模式开关
+     */
+    public static boolean debugMode = false;
+
 
     public static int addXp(CommandContext<FabricClientCommandSource> ctx) {
         double newXp = IronFistNewClient.ironFistPlayer.getFistXp() + DoubleArgumentType.getDouble(ctx, "xp");
@@ -52,6 +57,12 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
 
     public static int showLevel(CommandContext<FabricClientCommandSource> ctx) {
         ctx.getSource().sendFeedback(Text.literal("拳头等级: " + IronFistNewClient.ironFistPlayer.getFistLevel()));
+        return 1;
+    }
+
+    public static int debugInfo(CommandContext<FabricClientCommandSource> ctx) {
+        debugMode = !debugMode;
+        ctx.getSource().sendFeedback(Text.literal("调试模式: " + debugMode));
         return 1;
     }
 

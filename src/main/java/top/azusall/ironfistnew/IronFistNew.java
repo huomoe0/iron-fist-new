@@ -68,6 +68,8 @@ public class IronFistNew implements ModInitializer {
         // 注册一个方块挖掘事件监听器
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
             // 只有空手或者非工具挖掘记录
+
+            // TODO 目前已知创造模式也会加经验
             if (isTool(player.getMainHandStack().getItem())) {
                 return;
             }
