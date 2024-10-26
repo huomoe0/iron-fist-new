@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.ToolItem;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -123,9 +124,33 @@ public class BlockBreakService {
     }
 
 
+    /**
+     * 判断当前等级是否可以挖掘方块
+     * @param instance
+     * @param blockState
+     * @return
+     */
     public boolean canHarvest(ServerPlayerEntity instance, BlockState blockState) {
         IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(instance);
         int fistLevel = playerState.getFistLevel();
         return !blockState.isToolRequired() || getFistLevelTool(fistLevel).isSuitableFor(blockState);
+    }
+
+    /**
+     * 判断手上的物品是否可以执行后面的方法
+     * @param player
+     * @return
+     */
+    public static boolean canExecute(PlayerEntity player) {
+        // 跳过旁观和创造
+        if (player.isSpectator() || player.isCreative()) {
+            return false;
+        }
+        // 工具跳过
+        Item item = player.getMainHandStack().getItem();
+        if (item instanceof ToolItem) {
+            return false;
+        }
+        return true;
     }
 }

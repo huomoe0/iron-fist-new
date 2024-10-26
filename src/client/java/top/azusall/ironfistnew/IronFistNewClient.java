@@ -58,7 +58,7 @@ public class IronFistNewClient implements ClientModInitializer {
         BlockBreakService blockBreakService = BlockBreakService.INSTANCE;
         // 非空手恢复挖掘速度
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-            if (IronFistNew.canExecute(player)) {
+            if (BlockBreakService.canExecute(player)) {
                 // 可以挖掘调整速度
                 blockBreakService.setBlockBreakSpeed(player, ironFistPlayer.getFistLevel());
             } else {
