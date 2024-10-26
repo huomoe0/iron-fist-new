@@ -1,7 +1,6 @@
 plugins {
     id 'fabric-loom' version '1.8-SNAPSHOT'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 version = project.mod_version
@@ -100,11 +99,19 @@ jar {
     }
 }
 
-shadowJar {
-    archiveBaseName.set("${archives_base_name}")  // jar 文件的基本名字
-    archiveVersion.set("${mod_version}")  // jar 文件的版本号
-	archiveClassifier.set('')  // jar 文件的额外标签，这里设为空
+// 定义一个任务来重命名JAR文件
+tasks.register('renameJarAfterBuild', Copy) {
+    // 确保这个任务在jar任务之后执行
+    dependsOn 'build'
+
+    // 定义源文件和目标文件
+    from layout.buildDirectory.file("libs/${project.archivesBaseName}-${project.version}.jar")
+    into layout.buildDirectory.file("libs")
+
+    // 定义重命名策略
+    rename("${project.archivesBaseName}-${project.version}.jar", "${project.archivesBaseName}-${project.version}-fabric+${project.minecraft_version}.jar")
 }
+
 
 // configure the maven publication
 publishing {

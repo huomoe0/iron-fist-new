@@ -20,9 +20,6 @@ public abstract class BlockBreakMixin {
 
     /**
      * 让方块掉落
-     * @param instance
-     * @param blockState
-     * @return
      */
     @Redirect(method = "tryBreakBlock",
               at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;canHarvest(Lnet/minecraft/block/BlockState;)Z"))
