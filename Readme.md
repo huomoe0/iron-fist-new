@@ -6,11 +6,17 @@
 ### 介绍
     使用非工具挖掘方块提升拳头经验，拳头升级后可以挖掘更多方块，比如石头，铁矿石
 
+### 下载
+[CurseForge](https://www.curseforge.com/minecraft/mc-mods/ironfistnew)
+
 ### 版本
-    fabric 1.21.1
+    fabric 1.21.1 1.21.2
+
+
+
 
 ### 其他版本
-[铁拳 IronFist](https://www.mcmod.cn/class/4229.html)   
+[铁拳 IronFist Forge 1.7.10](https://www.mcmod.cn/class/4229.html)   
 
 
 ### 用法
