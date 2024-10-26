@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "id": "ironfistnew",
-  "version": "0.0.5",
+  "version": "0.1.0",
 
   "name": "IronFistNew",
   "description": "这个 Mod 允许玩家用空手挖掘矿石，但需要挖掘一定数量的方块来提升挖掘等级，基础挖掘等级亦会随等级提升而增长。",
   "authors": [
-    "huomoe"
+    "huomoe0"
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/ironfistnew",
@@ -36,7 +36,7 @@
   "depends": {
     "fabricloader": ">=0.16.7",
     "fabric": "*",
-    "minecraft": "1.21.1",
+    "minecraft": "1.21.2",
     "fabric-api": "*"
   }
 }

@@ -108,7 +108,7 @@ public class IronFistNewClient implements ClientModInitializer {
                 if (IronFistCommand.debugInfo) {
                     ClientPlayerEntity player = context.player();
                     player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
-                            ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
+                            ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()),false);
                 }
 
             });

@@ -2,7 +2,6 @@ package top.azusall.ironfistnew.lang;
 
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.text.Text;
 
 import java.io.*;
 import java.util.HashMap;
@@ -43,8 +42,8 @@ public class MyLanguageManager {
     }
 
 
-    public static Text getText(String key, Object... args) {
+    public static String getText(String key, Object... args) {
         String s = langMap.get(key);
-        return Text.literal(String.format(s, args));
+        return String.format(s, args);
     }
 }

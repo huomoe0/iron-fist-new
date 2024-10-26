@@ -22,9 +22,6 @@ public class StateSaverAndLoader extends PersistentState {
 
     /**
      * 写入nbt
-     * @param nbt
-     * @param registryLookup
-     * @return
      */
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {

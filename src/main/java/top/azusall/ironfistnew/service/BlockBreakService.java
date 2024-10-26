@@ -5,17 +5,20 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
+import net.minecraft.item.MiningToolItem;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.azusall.ironfistnew.constant.ParamConstant;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 import top.azusall.ironfistnew.lang.MyLanguageManager;
+import top.azusall.ironfistnew.util.MessageUtil;
 
 /**
  * @author houmo
@@ -59,13 +62,14 @@ public class BlockBreakService {
         if (energy < ParamConstant.ENERGY_THRESHOLD) {
             // 检查当前生命值，确保不会致死
             if (player.getHealth() - ParamConstant.DAMAGE_AMOUNT > 0) {
-                player.damage(world.getDamageSources().generic(), ParamConstant.DAMAGE_AMOUNT);
+                DamageSource damageSource = new DamageSource(world.getRegistryManager().getOptionalEntry(DamageTypes.GENERIC).get());
+                player.damage((ServerWorld) world, damageSource, ParamConstant.DAMAGE_AMOUNT);
                 log.info("------------------------player.damage(world.getDamageSources().generic(), ParamConstant.DAMAGE_AMOUNT) -----------------------------");
             } else {
                 // 如果生命值不足以承受该伤害，设置为最低生命值
                 player.setHealth(ParamConstant.MIN_HEALTH);
             }
-            player.sendMessage(MyLanguageManager.getText("ironfistnew.message.bleeding"));
+            MessageUtil.sendToPlayer(player, MyLanguageManager.getText("ironfistnew.message.bleeding"));
         }
 
         // 增加经验并检查是否升级
@@ -74,7 +78,7 @@ public class BlockBreakService {
         fistXp += obtainedXp;
         if (fistXp >= getLevelUpXp(fistLevel)) {
             fistLevel++;
-            player.sendMessage(MyLanguageManager.getText("ironfistnew.message.levelUp", fistLevel));
+            MessageUtil.sendToPlayer(player, MyLanguageManager.getText("ironfistnew.message.levelUp", fistLevel));
         }
 
         // 保存属性
@@ -102,7 +106,7 @@ public class BlockBreakService {
         // /attribute @s minecraft:player_block_break_speed base set 5.0
         // 修改挖掘速度
         AttributeContainer attributes = player.getAttributes();
-        EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
+        EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.BLOCK_BREAK_SPEED);
         double newSpeed = Math.max(((level - 1) * ParamConstant.SPEED_MULTIPLE), 1f);
         assert customInstance != null;
         customInstance.setBaseValue(newSpeed);
@@ -115,7 +119,8 @@ public class BlockBreakService {
             case 2 -> Items.WOODEN_PICKAXE;
             case 3 -> Items.STONE_PICKAXE;
             case 4 -> Items.IRON_PICKAXE;
-            default -> Items.DIAMOND_PICKAXE;
+            case 5 -> Items.NETHERITE_PICKAXE;
+            default -> Items.NETHERITE_PICKAXE;
         };
         return pickaxe.getDefaultStack();
     }
@@ -140,7 +145,7 @@ public class BlockBreakService {
         }
         // 工具跳过
         Item item = player.getMainHandStack().getItem();
-        if (item instanceof ToolItem) {
+        if (item instanceof MiningToolItem) {
             return false;
         }
         return true;
