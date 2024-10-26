@@ -1,0 +1,9 @@
+{
+  "ironfistnew.command.addXp": "经验提升到: %f",
+  "ironfistnew.command.debugInfo": "调试模式: %b",
+  "ironfistnew.command.levelUp": "拳头升级了! 当前等级: %d",
+  "ironfistnew.command.showLevel": "拳头等级: %d",
+  "ironfistnew.command.showXp": "拳头经验: %f\n下一级所需经验: %f",
+  "ironfistnew.message.bleeding": "你在流血，休息一下或使用工具！",
+  "ironfistnew.message.levelUp": "你升级了！ 当前等级为: %d"
+}

@@ -1,0 +1,9 @@
+{
+  "ironfistnew.command.addXp": "XP increased to: %f",
+  "ironfistnew.command.debugInfo": "Debug mode: %b",
+  "ironfistnew.command.levelUp": "Fist level up! New level: %d",
+  "ironfistnew.command.showLevel": "Fist level: %d",
+  "ironfistnew.command.showXp": "Fist xp: %f\nTo next level need: %f",
+  "ironfistnew.message.bleeding": "You're bleeding, take a break or use tools!",
+  "ironfistnew.message.levelUp": "Fist level up! New level: %d"
+}

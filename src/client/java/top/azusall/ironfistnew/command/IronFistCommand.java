@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 import top.azusall.ironfistnew.IronFistNewClient;
+import top.azusall.ironfistnew.lang.MyLanguageManager;
 import top.azusall.ironfistnew.util.ClientPayloadUtil;
 import top.azusall.ironfistnew.entity.MyC2SSyncPayload;
 import top.azusall.ironfistnew.service.BlockBreakService;
@@ -25,14 +26,13 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
     /**
      * 调试模式开关
      */
-    public static boolean debugMode = false;
+    public static boolean debugInfo = false;
 
-// TODO 增加中英文信息
     public static int addXp(CommandContext<FabricClientCommandSource> ctx) {
         double newXp = IronFistNewClient.ironFistPlayer.getFistXp() + DoubleArgumentType.getDouble(ctx, "xp");
         IronFistNewClient.ironFistPlayer.setFistXp(newXp);
         ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer, MyC2SSyncPayload.class);
-        ctx.getSource().sendFeedback(Text.literal("经验提升到: " + newXp));
+        ctx.getSource().sendFeedback(MyLanguageManager.getText("ironfistnew.command.addXp", newXp));
         return 1;
     }
 
@@ -45,24 +45,24 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
         IronFistNewClient.ironFistPlayer.setFistLevel(newLevel);
         IronFistNewClient.ironFistPlayer.setFistXp(BlockBreakService.INSTANCE.getLevelUpXp(oldLevel));
         ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer, MyC2SSyncPayload.class);
-        player.sendMessage(Text.literal("拳头升级了! 当前等级: " + newLevel));
+        player.sendMessage(MyLanguageManager.getText("ironfistnew.command.levelUp", newLevel));
         return 1;
     }
 
     public static int showXp(CommandContext<FabricClientCommandSource> ctx) {
-        ctx.getSource().sendFeedback(Text.literal("拳头经验: " + IronFistNewClient.ironFistPlayer.getFistXp() +
-                "\n下一级所需经验: " + BlockBreakService.INSTANCE.getLevelUpXp(IronFistNewClient.ironFistPlayer.getFistLevel())));
+        ctx.getSource().sendFeedback(MyLanguageManager.getText("ironfistnew.command.showXp",
+                IronFistNewClient.ironFistPlayer.getFistXp(), BlockBreakService.INSTANCE.getLevelUpXp(IronFistNewClient.ironFistPlayer.getFistLevel())));
         return 1;
     }
 
     public static int showLevel(CommandContext<FabricClientCommandSource> ctx) {
-        ctx.getSource().sendFeedback(Text.literal("拳头等级: " + IronFistNewClient.ironFistPlayer.getFistLevel()));
+        ctx.getSource().sendFeedback(MyLanguageManager.getText("ironfistnew.command.showLevel", IronFistNewClient.ironFistPlayer.getFistLevel()));
         return 1;
     }
 
     public static int debugInfo(CommandContext<FabricClientCommandSource> ctx) {
-        debugMode = !debugMode;
-        ctx.getSource().sendFeedback(Text.literal("调试模式: " + debugMode));
+        debugInfo = !debugInfo;
+        ctx.getSource().sendFeedback(MyLanguageManager.getText("ironfistnew.command.debugInfo", debugInfo));
         return 1;
     }
 
@@ -75,16 +75,16 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
      * 获取命令用法
      */
     public static int getCommandUsage(CommandContext<FabricClientCommandSource> ctx) {
-        String usage = "/fist [";
+        StringBuilder usage = new StringBuilder("/fist [");
         for (int i = COMMANDS.length - 1; i >= 0; i--) {
-            usage += COMMANDS[i];
+            usage.append(COMMANDS[i]);
             if (i >= 1) {
-                usage += " | ";
+                usage.append(" | ");
             }
         }
-        usage += "]";
+        usage.append("]");
         // 打印用法
-        String finalUsage = usage;
+        String finalUsage = usage.toString();
         ctx.getSource().sendFeedback(Text.literal(finalUsage));
         return 1;
     }

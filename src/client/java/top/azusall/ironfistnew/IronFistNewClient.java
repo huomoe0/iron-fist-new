@@ -5,16 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.resource.language.LanguageManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import top.azusall.ironfistnew.command.IronFistCommand;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 import top.azusall.ironfistnew.entity.MyS2CInitPayload;
 import top.azusall.ironfistnew.entity.MyS2CSyncPayload;
+import top.azusall.ironfistnew.lang.MyLanguageManager;
 import top.azusall.ironfistnew.service.BlockBreakService;
 import top.azusall.ironfistnew.util.PayloadUtil;
 
@@ -28,9 +31,22 @@ public class IronFistNewClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        registerLanguageManager();
         registerCommands();
         registerGlobalReceiver();
         registerBlockBreakEvent();
+    }
+
+    /**
+     * 注册语言管理器
+     */
+    private void registerLanguageManager() {
+
+        ClientPlayConnectionEvents.JOIN.register(IronFistNew.IRONFISTNEW, (handler, sender, client) -> {
+            LanguageManager languageManager = client.getLanguageManager();
+            String language = languageManager.getLanguage();
+            MyLanguageManager.init(language);
+        });
     }
 
 
@@ -89,11 +105,12 @@ public class IronFistNewClient implements ClientModInitializer {
                 ironFistPlayer = PayloadUtil.decodePayload(payload);
 
                 // 调试模式信息
-                if (IronFistCommand.debugMode) {
+                if (IronFistCommand.debugInfo) {
                     ClientPlayerEntity player = context.player();
                     player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
                             ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()));
                 }
+
             });
         });
     }

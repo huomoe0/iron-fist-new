@@ -11,18 +11,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.azusall.ironfistnew.constant.ParamConstant;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
+import top.azusall.ironfistnew.lang.MyLanguageManager;
 
 /**
- * @Author: liumingda
- * @Date: 2024/10/19 09:41
- * @Description:
+ * @author houmo
  */
-
 @Slf4j
 public class BlockBreakService {
     public static final BlockBreakService INSTANCE = new BlockBreakService();
@@ -68,7 +65,7 @@ public class BlockBreakService {
                 // 如果生命值不足以承受该伤害，设置为最低生命值
                 player.setHealth(ParamConstant.MIN_HEALTH);
             }
-            player.sendMessage(Text.literal(ParamConstant.BLEEDING_MESSAGE), false);
+            player.sendMessage(MyLanguageManager.getText("ironfistnew.message.bleeding"));
         }
 
         // 增加经验并检查是否升级
@@ -77,7 +74,7 @@ public class BlockBreakService {
         fistXp += obtainedXp;
         if (fistXp >= getLevelUpXp(fistLevel)) {
             fistLevel++;
-            player.sendMessage(Text.literal(ParamConstant.LEVEL_UP_MESSAGE_PREFIX + fistLevel));
+            player.sendMessage(MyLanguageManager.getText("ironfistnew.message.levelUp", fistLevel));
         }
 
         // 保存属性
@@ -126,9 +123,6 @@ public class BlockBreakService {
 
     /**
      * 判断当前等级是否可以挖掘方块
-     * @param instance
-     * @param blockState
-     * @return
      */
     public boolean canHarvest(ServerPlayerEntity instance, BlockState blockState) {
         IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(instance);
@@ -138,8 +132,6 @@ public class BlockBreakService {
 
     /**
      * 判断手上的物品是否可以执行后面的方法
-     * @param player
-     * @return
      */
     public static boolean canExecute(PlayerEntity player) {
         // 跳过旁观和创造
