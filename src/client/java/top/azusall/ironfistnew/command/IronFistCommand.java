@@ -27,7 +27,7 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
      */
     public static boolean debugMode = false;
 
-
+// TODO 增加中英文信息
     public static int addXp(CommandContext<FabricClientCommandSource> ctx) {
         double newXp = IronFistNewClient.ironFistPlayer.getFistXp() + DoubleArgumentType.getDouble(ctx, "xp");
         IronFistNewClient.ironFistPlayer.setFistXp(newXp);
