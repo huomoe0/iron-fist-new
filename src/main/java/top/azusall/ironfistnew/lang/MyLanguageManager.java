@@ -27,12 +27,14 @@ public class MyLanguageManager {
 
     private static void loadLanguage(String language) {
         String path = "assets/ironfistnew/lang/" + language + ".json";
-        try {
-            langMap = FileUtil.readResourceYmlFile(path, HashMap.class);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            langMap = FileUtil.readResourceYmlFile("assets/ironfistnew/lang/en_us.json", HashMap.class);
+
+        log.info("load language {}", path);
+        langMap = FileUtil.readResourceJsonFile(path, HashMap.class);
+        if (langMap == null) {
+            log.info("load language {}", "assets/ironfistnew/lang/en_us.json");
+            langMap = FileUtil.readResourceJsonFile("assets/ironfistnew/lang/en_us.json", HashMap.class);
         }
+
     }
 
 

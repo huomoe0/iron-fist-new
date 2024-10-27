@@ -14,7 +14,7 @@ minHealth: 0.1
 # 等级对应工具的挖掘等级,等级从1开始, 0表示默认
 # level需要连续
 level:
-  0: [ "minecraft:netherite_pickaxe" ]
+  0: ["minecraft:netherite_pickaxe"]
   1: ["minecraft:air"]
   2: ["minecraft:wooden_pickaxe"]
   3: ["minecraft:stone_pickaxe"]

@@ -16,7 +16,7 @@ import top.azusall.ironfistnew.service.BlockBreakService;
  */
 @Slf4j
 @Mixin(value = ServerPlayerInteractionManager.class)
-public abstract class BlockBreakMixin {
+public class BlockBreakMixin {
 
     /**
      * 让方块掉落
@@ -24,7 +24,6 @@ public abstract class BlockBreakMixin {
     @Redirect(method = "tryBreakBlock",
               at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;canHarvest(Lnet/minecraft/block/BlockState;)Z"))
     public boolean canHarvestReturn(ServerPlayerEntity instance, BlockState blockState) {
-        BlockBreakService instance1 = BlockBreakService.INSTANCE;
-        return instance1.canHarvest(instance, blockState);
+        return BlockBreakService.canHarvest(instance, blockState);
     }
 }

@@ -5,11 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.stream.Stream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author huomoe
@@ -27,13 +23,28 @@ public class FileUtil {
      */
     public static <T> T readResourceYmlFile(String path, Class<T> clazz) {
         T t = null;
-        try {
-            InputStream resourceAsStream = FileUtil.class.getClassLoader().getResourceAsStream(path);
+        try (InputStream resourceAsStream = FileUtil.class.getClassLoader().getResourceAsStream(path)) {
             Yaml yaml = new Yaml();
             t = yaml.loadAs(resourceAsStream, clazz);
-            resourceAsStream.close();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        }
+        return t;
+    }
+
+
+    public static <T> T readResourceJsonFile(String path, Class<T> clazz) {
+        T t = null;
+        try (InputStream resourceAsStream = FileUtil.class.getClassLoader().getResourceAsStream(path);
+             InputStreamReader reader = new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8)) {
+
+            if (resourceAsStream != null) {
+                t = new Gson().fromJson(reader, clazz);
+            } else {
+                log.error("Resource not found: " + path);
+            }
+        } catch (Exception e) {
+            log.error("Error reading JSON resource file: " + e.getMessage());
         }
         return t;
     }
@@ -70,8 +81,8 @@ public class FileUtil {
     public static void copyFile(String classpathPath, String destPath) {
         try (InputStream inputStream = FileUtil.class.getClassLoader().getResourceAsStream(classpathPath)) {
             File file = new File(destPath);
-            PrintWriter printWriter = new PrintWriter(file);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            PrintWriter printWriter = new PrintWriter(file, StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             bufferedReader.lines().forEach(line -> {
                 printWriter.println(line);
             });

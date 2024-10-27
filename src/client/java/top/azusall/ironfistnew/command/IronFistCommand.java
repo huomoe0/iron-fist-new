@@ -10,7 +10,6 @@ import net.minecraft.text.Text;
 import top.azusall.ironfistnew.IronFistNewClient;
 import top.azusall.ironfistnew.lang.MyLanguageManager;
 import top.azusall.ironfistnew.util.ClientPayloadUtil;
-import top.azusall.ironfistnew.entity.MyC2SSyncPayload;
 import top.azusall.ironfistnew.service.BlockBreakService;
 import top.azusall.ironfistnew.util.MessageUtil;
 
@@ -32,7 +31,7 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
     public static int addXp(CommandContext<FabricClientCommandSource> ctx) {
         double newXp = IronFistNewClient.ironFistPlayer.getFistXp() + DoubleArgumentType.getDouble(ctx, "xp");
         IronFistNewClient.ironFistPlayer.setFistXp(newXp);
-        ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer, MyC2SSyncPayload.class);
+        ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer);
         MessageUtil.sendToPlayer(ctx.getSource().getPlayer(), MyLanguageManager.getText("ironfistnew.command.addXp", newXp));
         return 1;
     }
@@ -44,15 +43,15 @@ public class IronFistCommand implements Command<FabricClientCommandSource> {
         assert player != null;
 
         IronFistNewClient.ironFistPlayer.setFistLevel(newLevel);
-        IronFistNewClient.ironFistPlayer.setFistXp(BlockBreakService.INSTANCE.getLevelUpXp(oldLevel));
-        ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer, MyC2SSyncPayload.class);
+        IronFistNewClient.ironFistPlayer.setFistXp(BlockBreakService.getLevelUpXp(oldLevel));
+        ClientPayloadUtil.sendToClient(IronFistNewClient.ironFistPlayer);
         MessageUtil.sendToPlayer(player, MyLanguageManager.getText("ironfistnew.command.levelUp", newLevel));
         return 1;
     }
 
     public static int showXp(CommandContext<FabricClientCommandSource> ctx) {
         MessageUtil.sendToPlayer(ctx.getSource().getPlayer(), MyLanguageManager.getText("ironfistnew.command.showXp",
-                IronFistNewClient.ironFistPlayer.getFistXp(), BlockBreakService.INSTANCE.getLevelUpXp(IronFistNewClient.ironFistPlayer.getFistLevel())));
+                IronFistNewClient.ironFistPlayer.getFistXp(), BlockBreakService.getLevelUpXp(IronFistNewClient.ironFistPlayer.getFistLevel())));
         return 1;
     }
 

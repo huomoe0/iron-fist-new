@@ -1,5 +1,6 @@
 package top.azusall.ironfistnew.config;
 
+import com.google.gson.Gson;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import top.azusall.ironfistnew.service.BlockBreakService;
@@ -31,6 +32,7 @@ public class IronFistNewConfig {
         }
         instance = FileUtil.readConfigFile(configPathStr, IronFistConfigModel.class);
         BlockBreakService.loadLevelList(instance.getLevel());
+        log.info("now config: {}", new Gson().toJson(instance));
     }
 
     /**

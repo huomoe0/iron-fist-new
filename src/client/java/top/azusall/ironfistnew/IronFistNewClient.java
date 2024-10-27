@@ -8,17 +8,18 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.resource.language.LanguageManager;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import top.azusall.ironfistnew.command.IronFistCommand;
 import top.azusall.ironfistnew.config.IronFistNewConfig;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
-import top.azusall.ironfistnew.entity.MyS2CInitPayload;
-import top.azusall.ironfistnew.entity.MyS2CSyncPayload;
 import top.azusall.ironfistnew.lang.MyLanguageManager;
 import top.azusall.ironfistnew.service.BlockBreakService;
 import top.azusall.ironfistnew.util.PayloadUtil;
@@ -59,8 +60,8 @@ public class IronFistNewClient implements ClientModInitializer {
     private void registerCommands() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("fist")
-                    .then(ClientCommandManager.literal("addxp")
-                            .then(ClientCommandManager.argument("xp", DoubleArgumentType.doubleArg(0)).executes(IronFistCommand::addXp).requires(source -> source.hasPermissionLevel(1))))
+                    .then(ClientCommandManager.literal("addxp").requires(source -> source.hasPermissionLevel(1))
+                            .then(ClientCommandManager.argument("xp", DoubleArgumentType.doubleArg(0)).executes(IronFistCommand::addXp)))
                     .then(ClientCommandManager.literal("levelup").executes(IronFistCommand::levelUp).requires(source -> source.hasPermissionLevel(1)))
                     .then(ClientCommandManager.literal("showxp").executes(IronFistCommand::showXp))
                     .then(ClientCommandManager.literal("showlevel").executes(IronFistCommand::showLevel))
@@ -74,14 +75,13 @@ public class IronFistNewClient implements ClientModInitializer {
      * 处理方块破坏事件
      */
     private void registerBlockBreakEvent() {
-        BlockBreakService blockBreakService = BlockBreakService.INSTANCE;
         // 非空手恢复挖掘速度
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
             if (BlockBreakService.canExecute(player)) {
                 // 可以挖掘调整速度
-                blockBreakService.setBlockBreakSpeed(player, ironFistPlayer.getFistLevel());
+                BlockBreakService.setBlockBreakSpeed(player, ironFistPlayer.getFistLevel());
             } else {
-                blockBreakService.setBlockBreakSpeed(player, 1);
+                BlockBreakService.setBlockBreakSpeed(player, 1);
             }
             return ActionResult.PASS;
         });
@@ -91,30 +91,15 @@ public class IronFistNewClient implements ClientModInitializer {
      * 注册数据包接收器
      */
     private void registerGlobalReceiver() {
-
-        // 注册payload
-        PayloadTypeRegistry.playS2C().register(MyS2CSyncPayload.ID, MyS2CSyncPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(MyS2CInitPayload.ID, MyS2CInitPayload.CODEC);
-
-        // 初始化
-        ClientPlayNetworking.registerGlobalReceiver(MyS2CInitPayload.ID, (payload, context) -> {
+        ClientPlayNetworking.registerGlobalReceiver(IronFistNew.IRONFISTNEW, (MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf payload, PacketSender sender) -> {
             ironFistPlayer = PayloadUtil.decodePayload(payload);
-        });
 
-        // 更新数据
-        ClientPlayNetworking.registerGlobalReceiver(MyS2CSyncPayload.ID, (payload, context) -> {
-            context.client().execute(() -> {
-                // 拿到服务端发送的数据包
-                ironFistPlayer = PayloadUtil.decodePayload(payload);
-
-                // 调试模式信息
+            // 调试模式信息
                 if (IronFistCommand.debugInfo) {
-                    ClientPlayerEntity player = context.player();
+                    ClientPlayerEntity player = client.player;
                     player.sendMessage(Text.literal(ironFistPlayer.getFistLevel() + " " + ironFistPlayer.getFistXp() + " " +
-                            ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()),false);
+                            ironFistPlayer.getEnergy() + " " + ironFistPlayer.getCumulativeWork() + " " + ironFistPlayer.getLastBreakMillis()), false);
                 }
-
-            });
         });
     }
 }

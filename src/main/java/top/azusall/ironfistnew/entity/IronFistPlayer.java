@@ -34,15 +34,12 @@ public class IronFistPlayer {
      */
     private double energy;
 
-    /**
-     * Creates a new instance of extended player data for the specified player.
-     *
-     */
+
     public IronFistPlayer() {
         // Initialize default data
         this.fistLevel = 1;
         this.fistXp = 0.0D;
-
+        this.energy = 1;
         this.cumulativeWork = 0.0F;
         this.lastBreakMillis = 0L;
     }
