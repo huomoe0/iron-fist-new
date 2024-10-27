@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -77,7 +78,7 @@ public class BlockBreakService {
         if (energy < IronFistNewConfig.getEnergyThreshold()) {
             // 检查当前生命值，确保不会致死
             if (player.getHealth() - IronFistNewConfig.getDamageAmount() > 0) {
-                player.damage(world.getDamageSources().generic(), IronFistNewConfig.getDamageAmount());
+                player.damage((ServerWorld) world, world.getDamageSources().generic(), IronFistNewConfig.getDamageAmount());
                 log.info("------------------------player.damage(world.getDamageSources().generic(), ParamConstant.DAMAGE_AMOUNT) -----------------------------");
             } else {
                 // 如果生命值不足以承受该伤害，设置为最低生命值
@@ -120,7 +121,7 @@ public class BlockBreakService {
         // /attribute @s minecraft:player_block_break_speed base set 5.0
         // 修改挖掘速度
         AttributeContainer attributes = player.getAttributes();
-        EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
+        EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.BLOCK_BREAK_SPEED);
         double newSpeed = Math.max(((level - 1) * IronFistNewConfig.getSpeedMultiple()), 1f);
         assert customInstance != null;
         customInstance.setBaseValue(newSpeed);
