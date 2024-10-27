@@ -9,11 +9,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.resource.language.LanguageManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import top.azusall.ironfistnew.command.IronFistCommand;
+import top.azusall.ironfistnew.config.IronFistNewConfig;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 import top.azusall.ironfistnew.entity.MyS2CInitPayload;
 import top.azusall.ironfistnew.entity.MyS2CSyncPayload;
@@ -31,6 +33,7 @@ public class IronFistNewClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        IronFistNewConfig.loadConfig(FabricLoaderImpl.INSTANCE.getConfigDir().toString());
         registerLanguageManager();
         registerCommands();
         registerGlobalReceiver();

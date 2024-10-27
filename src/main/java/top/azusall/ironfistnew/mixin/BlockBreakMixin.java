@@ -27,5 +27,4 @@ public abstract class BlockBreakMixin {
         BlockBreakService instance1 = BlockBreakService.INSTANCE;
         return instance1.canHarvest(instance, blockState);
     }
-
 }

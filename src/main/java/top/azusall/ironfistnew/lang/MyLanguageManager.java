@@ -1,9 +1,8 @@
 package top.azusall.ironfistnew.lang;
 
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import top.azusall.ironfistnew.util.FileUtil;
 
-import java.io.*;
 import java.util.HashMap;
 
 
@@ -27,17 +26,12 @@ public class MyLanguageManager {
 
 
     private static void loadLanguage(String language) {
+        String path = "assets/ironfistnew/lang/" + language + ".json";
         try {
-            String path = "assets/ironfistnew/lang/" + language + ".json";
-
-            InputStream resourceAsStream = MyLanguageManager.class.getClassLoader().getResourceAsStream(path);
-            if (resourceAsStream == null) {
-                resourceAsStream = MyLanguageManager.class.getClassLoader().getResourceAsStream("assets/ironfistnew/lang/en_us.json");
-            }
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resourceAsStream));
-            langMap = new Gson().fromJson(bufferedReader, HashMap.class);
+            langMap = FileUtil.readResourceYmlFile(path, HashMap.class);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage());
+            langMap = FileUtil.readResourceYmlFile("assets/ironfistnew/lang/en_us.json", HashMap.class);
         }
     }
 

@@ -1,0 +1,22 @@
+# 精力回复因子
+energyRecoveryFactor: 100000
+# 挖掘速度因子
+speedMultiple: 4
+# 挖掘方块每一硬度对应的工作时间
+millisecondsHardnessOne: 1000
+# 精力低于这个比例会掉血
+energyThreshold: 0.2
+# 受到的伤害
+damageAmount: 2.0
+# 受到伤害的最低血量
+minHealth: 0.1
+
+# 等级对应工具的挖掘等级,等级从1开始, 0表示默认
+# level需要连续
+level:
+  0: [ "minecraft:netherite_pickaxe" ]
+  1: ["minecraft:air"]
+  2: ["minecraft:wooden_pickaxe"]
+  3: ["minecraft:stone_pickaxe"]
+  4: ["minecraft:iron_pickaxe"]
+  5: ["minecraft:diamond_pickaxe"]

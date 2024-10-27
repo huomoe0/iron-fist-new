@@ -8,15 +8,19 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.azusall.ironfistnew.constant.ParamConstant;
+import top.azusall.ironfistnew.config.IronFistNewConfig;
 import top.azusall.ironfistnew.entity.IronFistPlayer;
 import top.azusall.ironfistnew.lang.MyLanguageManager;
 import top.azusall.ironfistnew.util.MessageUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author houmo
@@ -24,8 +28,21 @@ import top.azusall.ironfistnew.util.MessageUtil;
 @Slf4j
 public class BlockBreakService {
     public static final BlockBreakService INSTANCE = new BlockBreakService();
+    public static ArrayList<ArrayList<ItemStack>> levelMap = new ArrayList<>();
 
     private BlockBreakService() {
+    }
+
+    public static void loadLevelList(HashMap<Integer, ArrayList<String>> level) {
+        level.forEach((key, value) -> {
+            ArrayList<ItemStack> itemStacks = new ArrayList<>();
+            value.forEach(s -> {
+                String[] split = s.split(":");
+                Item item = Registries.ITEM.get(Identifier.of(split[0], split[1]));
+                itemStacks.add(item.getDefaultStack());
+            });
+            levelMap.add(itemStacks);
+        });
     }
 
     /**
@@ -37,13 +54,13 @@ public class BlockBreakService {
         // 硬度
         float hardness = state.getHardness(world, pos);
         // 精力恢复时间
-        float recoveryTime = ParamConstant.ENERGY_RECOVERY_FACTOR * fistLevel;
+        float recoveryTime = IronFistNewConfig.getEnergyRecoveryFactor() * fistLevel;
         long currentMillis = System.currentTimeMillis();
         long lastMillis = playerState.getLastBreakMillis();
         long deltaMillis = (currentMillis - lastMillis);
         long delta = Math.round(Math.min(recoveryTime, deltaMillis));
 
-        float workTime = ParamConstant.MILLISECONDS_HARDNESS_ONE * hardness;
+        float workTime = IronFistNewConfig.getMillisecondsHardnessOne() * hardness;
         float restTime = delta - workTime;
 
         if (delta == recoveryTime) {
@@ -57,14 +74,14 @@ public class BlockBreakService {
         double energy = (recoveryTime - cumulativeWork) / recoveryTime;
 
         // 如果疲劳值太低会受到伤害
-        if (energy < ParamConstant.ENERGY_THRESHOLD) {
+        if (energy < IronFistNewConfig.getEnergyThreshold()) {
             // 检查当前生命值，确保不会致死
-            if (player.getHealth() - ParamConstant.DAMAGE_AMOUNT > 0) {
-                player.damage(world.getDamageSources().generic(), ParamConstant.DAMAGE_AMOUNT);
+            if (player.getHealth() - IronFistNewConfig.getDamageAmount() > 0) {
+                player.damage(world.getDamageSources().generic(), IronFistNewConfig.getDamageAmount());
                 log.info("------------------------player.damage(world.getDamageSources().generic(), ParamConstant.DAMAGE_AMOUNT) -----------------------------");
             } else {
                 // 如果生命值不足以承受该伤害，设置为最低生命值
-                player.setHealth(ParamConstant.MIN_HEALTH);
+                player.setHealth(IronFistNewConfig.getMinHealth());
             }
             MessageUtil.sendToPlayer(player, MyLanguageManager.getText("ironfistnew.message.bleeding"));
         }
@@ -104,22 +121,18 @@ public class BlockBreakService {
         // 修改挖掘速度
         AttributeContainer attributes = player.getAttributes();
         EntityAttributeInstance customInstance = attributes.getCustomInstance(EntityAttributes.PLAYER_BLOCK_BREAK_SPEED);
-        double newSpeed = Math.max(((level - 1) * ParamConstant.SPEED_MULTIPLE), 1f);
+        double newSpeed = Math.max(((level - 1) * IronFistNewConfig.getSpeedMultiple()), 1f);
         assert customInstance != null;
         customInstance.setBaseValue(newSpeed);
     }
 
 
-    private ItemStack getFistLevelTool(int level) {
-        Item pickaxe = switch (level) {
-            case 1 -> Items.AIR;
-            case 2 -> Items.WOODEN_PICKAXE;
-            case 3 -> Items.STONE_PICKAXE;
-            case 4 -> Items.IRON_PICKAXE;
-            case 5 -> Items.NETHERITE_PICKAXE;
-            default -> Items.NETHERITE_PICKAXE;
-        };
-        return pickaxe.getDefaultStack();
+    private ArrayList<ItemStack> getFistLevelTool(int level) {
+        if (level >= levelMap.size()) {
+            // 默认等级
+            level = 0;
+        }
+        return levelMap.get(level);
     }
 
 
@@ -129,11 +142,18 @@ public class BlockBreakService {
     public boolean canHarvest(ServerPlayerEntity instance, BlockState blockState) {
         IronFistPlayer playerState = StateSaverAndLoader.getPlayerState(instance);
         int fistLevel = playerState.getFistLevel();
-        return !blockState.isToolRequired() || getFistLevelTool(fistLevel).isSuitableFor(blockState);
+        boolean b = !blockState.isToolRequired();
+        for (ItemStack itemStack : getFistLevelTool(fistLevel)) {
+            b |= itemStack.isSuitableFor(blockState);
+            if (b)  {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * 判断手上的物品是否可以执行后面的方法
+     * 判断用手上的物品挖掘是否提升经验
      */
     public static boolean canExecute(PlayerEntity player) {
         // 跳过旁观和创造
@@ -142,9 +162,6 @@ public class BlockBreakService {
         }
         // 工具跳过
         Item item = player.getMainHandStack().getItem();
-        if (item instanceof MiningToolItem) {
-            return false;
-        }
-        return true;
+        return !(item instanceof MiningToolItem);
     }
 }
