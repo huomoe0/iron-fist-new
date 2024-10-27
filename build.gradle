@@ -101,6 +101,19 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
+
+    from {
+        // 获取 SnakeYAML 的依赖并解压到 JAR 中
+        configurations.runtimeClasspath.findAll {
+            it.name.contains("snakeyaml")
+        }.collect { zipTree(it) }
+    }
+//    manifest {
+//        attributes(
+//            'Main-Class': 'top.azusall.ironfistnew.IronFistNew' // 替换为主类路径
+//        )
+//    }
+
 }
 
 // 定义一个任务来重命名JAR文件
